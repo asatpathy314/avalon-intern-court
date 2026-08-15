@@ -126,28 +126,10 @@ export function QuestScreen({
           <span style={{ fontSize: 34 }}>◯</span>
           <span>SUCCESS</span>
         </button>
-        {v.canFail ? (
-          <button className="vote-btn reject" onClick={() => play("fail")}>
-            <span style={{ fontSize: 30 }}>◆</span>
-            <span>FAIL</span>
-          </button>
-        ) : (
-          <div
-            className="vote-btn"
-            style={{
-              background: "rgba(64,32,32,0.35)",
-              border: "2px dashed rgba(168,109,109,0.4)",
-              color: "rgba(237,230,214,0.45)",
-              borderRadius: 2,
-            }}
-          >
-            <span style={{ fontSize: 30 }}>◆</span>
-            <span>FAIL</span>
-            <span style={{ font: "400 11px var(--font-body)", letterSpacing: 0 }}>
-              loyal servants must succeed
-            </span>
-          </div>
-        )}
+        <button className="vote-btn reject" onClick={() => play("fail")}>
+          <span style={{ fontSize: 30 }}>◆</span>
+          <span>FAIL</span>
+        </button>
       </div>
     </div>
   );

@@ -39,6 +39,8 @@ export interface Config {
   disabled: RoleKey[];
   /** which evil role carries the assassin flag; resolved against roles actually in play at deal time */
   assassinFlag: RoleKey;
+  /** false = no endgame Merlin guess: three quests alone decide the game */
+  assassination: boolean;
   rejectionVariant: "official" | "unopposed";
 }
 

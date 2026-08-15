@@ -35,7 +35,12 @@ export function createRoom(code: string, hostToken: string, now = Date.now()): G
     hostToken,
     phase: "lobby",
     players: [],
-    config: { disabled: [], assassinFlag: "assassin", rejectionVariant: "official" },
+    config: {
+      disabled: [],
+      assassinFlag: "assassin",
+      assassination: true,
+      rejectionVariant: "official",
+    },
     roles: {},
     rolesInPlay: [],
     flagHolderId: null,
@@ -101,7 +106,11 @@ export function updateConfig(s: GameState, cfg: Partial<Config>): GameState {
     rejectionVariant === "official" || rejectionVariant === "unopposed",
     "Unknown rejection variant"
   );
-  return { ...s, config: { disabled, assassinFlag: flagWanted, rejectionVariant } };
+  const assassination = cfg.assassination ?? s.config.assassination !== false;
+  return {
+    ...s,
+    config: { disabled, assassinFlag: flagWanted, assassination: !!assassination, rejectionVariant },
+  };
 }
 
 /** Deal roles and enter the private-reveal phase. */
@@ -114,9 +123,9 @@ export function beginCourt(s: GameState, rng: () => number = Math.random): GameS
   s.players.forEach((p, i) => (roles[p.id] = dealt[i]));
 
   // resolve the assassin flag: configured holder if in play, else priority order.
-  // Merlin resting means no assassination phase at all.
+  // Merlin resting or the assassination toggle being off means no endgame guess at all.
   let flagHolderId: string | null = null;
-  if (!s.config.disabled.includes("merlin")) {
+  if (!s.config.disabled.includes("merlin") && s.config.assassination !== false) {
     const inPlay = (r: RoleKey) => Object.values(roles).includes(r);
     const flagRole = inPlay(s.config.assassinFlag)
       ? s.config.assassinFlag
@@ -254,9 +263,7 @@ export function playQuestCard(
   assert(s.proposal.includes(playerId), "You do not ride on this mission");
   assert(!(playerId in s.questCards), "Your card is cast");
   assert(card === "success" || card === "fail", "Unknown card");
-  if (card === "fail") {
-    assert(isEvil(s.roles[playerId]), "Loyal servants must succeed");
-  }
+  // house rule: anyone may fail a quest, Good included
   const questCards = { ...s.questCards, [playerId]: card };
   const next: GameState = { ...s, questCards };
   if (Object.keys(questCards).length === s.proposal.length) {

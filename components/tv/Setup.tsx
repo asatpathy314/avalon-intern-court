@@ -10,6 +10,8 @@ function advisory(v: TvView): string {
   const n = v.playerCount;
   const off = (r: RoleKey) => v.config.disabled.includes(r);
   if (off("merlin")) return "Without Merlin the court plays blind — and no blade falls at the end.";
+  if (!v.config.assassination)
+    return "The blade is sheathed: three quests alone decide it, and Merlin may steer openly.";
   if (!off("mordred") && !off("morgana") && n === 7)
     return "Mordred and Morgana together at 7 is punishing for Good. Consider resting Mordred for a first game.";
   if (off("mistress") && !off("morgana"))
@@ -53,7 +55,7 @@ export function TvSetup({
       <div key={r} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ opacity: off ? 0.45 : 1 }}>
           {ROLES[r].sigil} {ROLES[r].name}
-          {v.config.assassinFlag === r && !off && flagChoices.length > 0 && (
+          {v.config.assassination && v.config.assassinFlag === r && !off && flagChoices.length > 0 && (
             <span style={{ color: "var(--evil-text)", font: "600 20px var(--font-body)", marginLeft: 10 }}>
               ✕ carries the blade
             </span>
@@ -228,7 +230,34 @@ export function TvSetup({
                   : "5TH LEADER PICKS UNOPPOSED"}
               </button>
             </div>
-            {flagChoices.length > 1 && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>Assassination</span>
+              <button
+                onClick={() =>
+                  act("updateConfig", { config: { assassination: !v.config.assassination } })
+                }
+                style={
+                  v.config.assassination
+                    ? {
+                        font: "600 20px var(--font-body)",
+                        letterSpacing: "0.06em",
+                        color: "var(--ground)",
+                        background: "var(--gold)",
+                        padding: "6px 16px",
+                      }
+                    : {
+                        font: "600 20px var(--font-body)",
+                        letterSpacing: "0.06em",
+                        color: "rgba(237,230,214,0.6)",
+                        border: "1px solid rgba(237,230,214,0.3)",
+                        padding: "5px 15px",
+                      }
+                }
+              >
+                {v.config.assassination ? "✕ EVIL NAMES MERLIN AT THE END" : "OFF — QUESTS ALONE DECIDE"}
+              </button>
+            </div>
+            {v.config.assassination && flagChoices.length > 1 && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span>Assassin&apos;s blade</span>
                 <button
@@ -261,8 +290,9 @@ export function TvSetup({
         ) : (
           <div style={{ font: "400 26px/1.5 var(--font-body)", color: "rgba(237,230,214,0.55)", marginTop: 70 }}>
             Customize: rest any special role — its seat becomes a plain Servant or Minion. The
-            assassin&apos;s blade may pass to any evil role in play. Merlin resting means no
-            assassination phase. The last configuration persists for the next game.
+            assassin&apos;s blade may pass to any evil role in play, or be sheathed entirely so
+            three quests alone decide the game. The last configuration persists for the next
+            game.
           </div>
         )}
       </div>

@@ -41,7 +41,12 @@ interface CommonView {
 
 export interface TvView extends CommonView {
   kind: "tv";
-  config: { disabled: RoleKey[]; assassinFlag: RoleKey; rejectionVariant: string };
+  config: {
+    disabled: RoleKey[];
+    assassinFlag: RoleKey;
+    assassination: boolean;
+    rejectionVariant: string;
+  };
   voteReveal: {
     votes: { name: string; vote: Vote }[];
     approve: number;
@@ -83,7 +88,6 @@ export interface PlayerView extends CommonView {
   myVote: Vote | null;
   onTeam: boolean;
   myCard: QuestCard | null;
-  canFail: boolean;
   cardsIn: number;
   cardsNeeded: number;
   voteResult: { approved: boolean; approve: number; reject: number } | null;
@@ -134,7 +138,7 @@ export function tvView(s: GameState, seen: Record<string, number>, now = Date.no
   return {
     kind: "tv",
     ...common(s, seen, now),
-    config: s.config,
+    config: { ...s.config, assassination: s.config.assassination !== false },
     voteReveal:
       s.phase === "voteReveal" && s.voteMeta
         ? {
@@ -259,7 +263,6 @@ export function playerView(
     myVote: s.phase === "voting" ? s.votes[playerId] ?? null : null,
     onTeam,
     myCard: s.phase === "quest" ? s.questCards[playerId] ?? null : null,
-    canFail: dealt ? isEvil(role) : false,
     cardsIn: s.phase === "quest" ? Object.keys(s.questCards).length : 0,
     cardsNeeded: s.phase === "quest" ? s.proposal.length : 0,
     voteResult:
