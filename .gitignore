@@ -8,3 +8,4 @@ next-env.d.ts
 design_handoff_avalon_intern_court/
 form-design-choices/
 *.zip
+.env*

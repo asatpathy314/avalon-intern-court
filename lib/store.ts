@@ -110,8 +110,11 @@ function redisStore(redis: Redis): RoomStore {
 let _store: RoomStore | null = null;
 export function getStore(): RoomStore {
   if (!_store) {
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-      _store = redisStore(Redis.fromEnv({ enableAutoPipelining: true }));
+    // Upstash direct install uses UPSTASH_REDIS_*; the Vercel Marketplace resource uses KV_*
+    const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+    if (url && token) {
+      _store = redisStore(new Redis({ url, token, enableAutoPipelining: true }));
     } else {
       _store = memoryStore;
     }
