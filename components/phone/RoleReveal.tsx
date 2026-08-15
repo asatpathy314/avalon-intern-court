@@ -1,8 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import type { PlayerView } from "@/lib/views";
+import type { Knowledge, PlayerView } from "@/lib/views";
 import { Plate } from "@/components/Plate";
+
+export function KnowledgeBox({ knowledge }: { knowledge: Knowledge }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        background: "rgba(237,230,214,0.06)",
+        padding: "10px 12px",
+        font: "400 13px/1.6 var(--font-body)",
+      }}
+    >
+      <span
+        style={{
+          font: "600 10px var(--font-body)",
+          letterSpacing: "0.14em",
+          color: "var(--parchment-55)",
+        }}
+      >
+        {knowledge.label}
+      </span>
+      <br />
+      {knowledge.names.join(" · ")}
+      {knowledge.note && (
+        <span style={{ color: "rgba(237,230,214,0.45)" }}> {knowledge.note}</span>
+      )}
+    </div>
+  );
+}
 
 export function RoleReveal({
   v,
@@ -50,31 +78,7 @@ export function RoleReveal({
                 </>
               )}
             </div>
-            {role.knowledge && (
-              <div
-                style={{
-                  width: "100%",
-                  background: "rgba(237,230,214,0.06)",
-                  padding: "10px 12px",
-                  font: "400 13px/1.6 var(--font-body)",
-                }}
-              >
-                <span
-                  style={{
-                    font: "600 10px var(--font-body)",
-                    letterSpacing: "0.14em",
-                    color: "var(--parchment-55)",
-                  }}
-                >
-                  {role.knowledge.label}
-                </span>
-                <br />
-                {role.knowledge.names.join(" · ")}
-                {role.knowledge.note && (
-                  <span style={{ color: "rgba(237,230,214,0.45)" }}> {role.knowledge.note}</span>
-                )}
-              </div>
-            )}
+            {role.knowledge && <KnowledgeBox knowledge={role.knowledge} />}
           </>
         ) : (
           <div

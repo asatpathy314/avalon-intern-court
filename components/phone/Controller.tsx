@@ -1,23 +1,104 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRoom } from "@/components/useRoom";
 import type { PlayerView } from "@/lib/views";
 import { Crest } from "@/components/Crest";
-import { RoleReveal } from "./RoleReveal";
+import { KnowledgeBox, RoleReveal } from "./RoleReveal";
 import { ProposeScreen } from "./Propose";
 import { QuestScreen, VoteScreen } from "./VoteQuest";
 import { AssassinScreen } from "./Assassin";
 import { Plate } from "@/components/Plate";
 
+/** Hold the header chip to privately recall your role mid-game; release to hide. */
+function RolePeek({ v }: { v: PlayerView }) {
+  const [held, setHeld] = useState(false);
+  // the overlay covers the chip, so end the hold from window-level events
+  useEffect(() => {
+    if (!held) return;
+    const off = () => setHeld(false);
+    window.addEventListener("pointerup", off);
+    window.addEventListener("pointercancel", off);
+    window.addEventListener("blur", off);
+    return () => {
+      window.removeEventListener("pointerup", off);
+      window.removeEventListener("pointercancel", off);
+      window.removeEventListener("blur", off);
+    };
+  }, [held]);
+
+  const role = v.role;
+  if (!role) {
+    return (
+      <span className="flame" style={{ color: "var(--gold)" }}>
+        ✦
+      </span>
+    );
+  }
+  return (
+    <>
+      <button
+        onPointerDown={(e) => {
+          e.preventDefault();
+          setHeld(true);
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+        aria-label="Hold to recall your role"
+        style={{
+          font: "600 11px var(--font-body)",
+          letterSpacing: "0.1em",
+          color: "var(--gold)",
+          border: "1px solid rgba(201,162,75,0.45)",
+          borderRadius: 2,
+          padding: "2px 8px",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          touchAction: "none",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
+        }}
+      >
+        <span className="flame">{role.sigil}</span> ROLE
+      </button>
+      {held && (
+        <div
+          className="pause-overlay"
+          style={{ background: "rgba(11,13,24,0.95)", gap: 14, padding: 24 }}
+        >
+          <Plate role={role.key} width={180} showFlavor={false} />
+          {role.knowledge && (
+            <div style={{ width: "100%", maxWidth: 320 }}>
+              <KnowledgeBox knowledge={role.knowledge} />
+            </div>
+          )}
+          {role.flagHolder && role.key !== "assassin" && (
+            <div style={{ font: "400 12px var(--font-body)", color: "var(--evil-text)" }}>
+              You carry the assassin&apos;s flag.
+            </div>
+          )}
+          <div
+            style={{
+              font: "600 11px var(--font-body)",
+              letterSpacing: "0.12em",
+              color: "var(--parchment-55)",
+            }}
+          >
+            ◉ RELEASE TO HIDE
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function Header({ v }: { v: PlayerView }) {
   const leaderLabel =
     v.leaderId === v.me.id ? "♛ YOU" : v.leaderName ? `♛ ${v.leaderName}` : "—";
   return (
-    <div className="phone-header">
-      <span className="flame" style={{ color: "var(--gold)" }}>
-        {v.role?.sigil ?? "✦"}
-      </span>
+    <div className="phone-header" style={{ alignItems: "center" }}>
+      <RolePeek v={v} />
       <span>{v.phase === "gameover" ? "ENDGAME" : `MISSION ${v.mission + 1} / 5`}</span>
       <span>{v.phase === "gameover" ? "—" : leaderLabel}</span>
     </div>
